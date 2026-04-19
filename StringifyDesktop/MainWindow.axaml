@@ -1,0 +1,21 @@
+<suki:SukiWindow
+    x:Class="StringifyDesktop.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialogs="using:StringifyDesktop.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+    xmlns:views="using:StringifyDesktop.Views"
+    mc:Ignorable="d"
+    Width="1180"
+    Height="820"
+    MinWidth="980"
+    MinHeight="720"
+    Icon="/Assets/stringify.ico"
+    Title="Stringify Desktop">
+    <Grid>
+        <views:MainDashboardView />
+        <dialogs:TrayPromptWindow x:Name="TrayPromptDialog" />
+    </Grid>
+</suki:SukiWindow>

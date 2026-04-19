@@ -1,0 +1,50 @@
+<UserControl
+    x:Class="StringifyDesktop.Dialogs.TrayPromptWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    IsVisible="False">
+    <Border Background="#A60A1018">
+        <Grid Margin="24" VerticalAlignment="Center">
+            <Border
+                MaxWidth="560"
+                Padding="28"
+                HorizontalAlignment="Center"
+                Background="#111821"
+                BorderBrush="#2B394C"
+                BorderThickness="1"
+                CornerRadius="24">
+                <StackPanel MaxWidth="450" HorizontalAlignment="Center" Spacing="18">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="24"
+                        FontWeight="SemiBold"
+                        Foreground="#F8FAFC"
+                        Text="Close Stringify Desktop?"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Foreground="#E2E8F0"
+                        Opacity="0.92"
+                        Text="Closing the app will stop syncing new replays. You can quit now, minimize to the tray to keep syncing in the background, or cancel and keep the window open."
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                        <Button
+                            x:Name="CancelButton"
+                            MinWidth="110"
+                            Click="OnCancelClicked"
+                            Content="Cancel" />
+                        <Button
+                            MinWidth="150"
+                            Click="OnMinimizeClicked"
+                            Content="Minimize to Tray" />
+                        <Button
+                            MinWidth="110"
+                            Click="OnQuitClicked"
+                            Content="Quit" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

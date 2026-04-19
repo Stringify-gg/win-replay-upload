@@ -1,0 +1,145 @@
+<UserControl
+    x:Class="StringifyDesktop.Views.MainDashboardView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+    mc:Ignorable="d">
+    <ScrollViewer>
+        <Grid Margin="24" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="18">
+            <Border
+                Grid.Row="0"
+                Padding="18"
+                CornerRadius="18"
+                Background="#151C24"
+                IsVisible="{Binding IsSignedIn}">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                    <TextBlock FontSize="28" FontWeight="SemiBold" Text="Stringify Desktop" />
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding UserLabel}" />
+                        <Button Command="{Binding SignOutCommand}" Content="Sign out" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="0,10,0,0"
+                        Opacity="0.8"
+                        Text="Automatic replay uploads with secure browser sign-in and tray syncing." />
+                </Grid>
+            </Border>
+
+            <Border
+                Grid.Row="1"
+                Padding="28"
+                CornerRadius="22"
+                MaxWidth="560"
+                HorizontalAlignment="Center"
+                Background="#131A22"
+                IsVisible="{Binding IsSignedOut}">
+                <StackPanel Spacing="16">
+                    <TextBlock HorizontalAlignment="Center" FontSize="30" FontWeight="SemiBold" Text="Stringify Desktop" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        MaxWidth="420"
+                        Opacity="0.8"
+                        TextAlignment="Center"
+                        Text="Stringify will automatically upload your replays upon download." />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        IsVisible="{Binding HasAuthStatus}"
+                        Opacity="0.85"
+                        Text="{Binding AuthStatus}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <Border
+                        IsVisible="{Binding HasAuthError}"
+                        Padding="12"
+                        CornerRadius="12"
+                        Background="#4C1D1D">
+                        <TextBlock Foreground="#FFBABA" Text="{Binding AuthError}" TextWrapping="Wrap" />
+                    </Border>
+                    <Button
+                        HorizontalAlignment="Center"
+                        MinWidth="320"
+                        MinHeight="64"
+                        Command="{Binding SignInCommand}"
+                        Content="{Binding SignInButtonText}" />
+                </StackPanel>
+            </Border>
+
+            <ProgressBar
+                Grid.Row="2"
+                Height="6"
+                IsIndeterminate="True"
+                IsVisible="{Binding IsBusy}" />
+
+            <Grid
+                Grid.Row="3"
+                ColumnDefinitions="3*,2*"
+                ColumnSpacing="18"
+                IsVisible="{Binding IsSignedIn}">
+                <StackPanel Grid.Column="0" Spacing="18">
+                    <Border Padding="18" CornerRadius="18" Background="#10161D">
+                        <StackPanel Spacing="14">
+                            <TextBlock FontSize="20" FontWeight="SemiBold" Text="Folder" />
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                <TextBox Grid.Column="0" Text="{Binding WatchDirectoryInput}" />
+                                <Button Grid.Column="1" Command="{Binding SaveWatchDirectoryCommand}" Content="Save folder" />
+                                <Button Grid.Column="2" Command="{Binding ChooseFolderCommand}" Content="Choose folder..." />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Command="{Binding ToggleAutoSyncCommand}" Content="Toggle auto-sync" />
+                                <Button Command="{Binding ManualSyncCommand}" Content="Manual sync now" />
+                                <Button Command="{Binding PickFilesCommand}" Content="Pick .replay file(s)..." />
+                            </StackPanel>
+                            <TextBlock Text="{Binding AutoSyncStatusText, StringFormat=Auto-sync: {0}}" />
+                            <TextBlock Text="{Binding WatcherStatusText, StringFormat=Watcher: {0}}" />
+                            <TextBlock
+                                IsVisible="{Binding ShouldOfferTrayOnClose}"
+                                Opacity="0.8"
+                                Text="Closing the window will ask whether to quit, minimize to the tray, or cancel." />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Padding="18" CornerRadius="18" Background="#10161D">
+                        <StackPanel Spacing="14">
+                            <TextBlock FontSize="20" FontWeight="SemiBold" Text="Upload history" />
+                            <dg:DataGrid
+                                AutoGenerateColumns="False"
+                                CanUserResizeColumns="True"
+                                HeadersVisibility="Column"
+                                Height="280"
+                                ItemsSource="{Binding HistoryRows}">
+                                <dg:DataGrid.Columns>
+                                    <dg:DataGridTextColumn Binding="{Binding FileName}" Header="File" IsReadOnly="True" Width="2*" />
+                                    <dg:DataGridTextColumn Binding="{Binding StatusText}" Header="Status" IsReadOnly="True" Width="*" />
+                                    <dg:DataGridTextColumn Binding="{Binding WhenText}" Header="When" IsReadOnly="True" Width="*" />
+                                    <dg:DataGridTextColumn Binding="{Binding Detail}" Header="Detail" IsReadOnly="True" Width="2*" />
+                                </dg:DataGrid.Columns>
+                            </dg:DataGrid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="18">
+                    <Border Padding="18" CornerRadius="18" Background="#10161D">
+                        <StackPanel Spacing="14">
+                            <TextBlock FontSize="20" FontWeight="SemiBold" Text="Stats" />
+                            <WrapPanel ItemSpacing="12" LineSpacing="6">
+                                <TextBlock Text="{Binding TotalCount, StringFormat=Total: {0}}" />
+                                <TextBlock Text="{Binding UploadedCount, StringFormat=Uploaded: {0}}" />
+                                <TextBlock Text="{Binding AlreadyUploadedCount, StringFormat=Already uploaded: {0}}" />
+                                <TextBlock Text="{Binding FailedCount, StringFormat=Failed: {0}}" />
+                            </WrapPanel>
+                            <WrapPanel ItemSpacing="10" LineSpacing="10">
+                                <Button Command="{Binding RetryFailedCommand}" Content="Retry failed" />
+                                <Button Command="{Binding ClearFailedCommand}" Content="Clear failed entries" />
+                                <Button Command="{Binding ExportLogCommand}" Content="Export log" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

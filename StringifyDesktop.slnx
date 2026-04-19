@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="StringifyDesktop.Tests/StringifyDesktop.Tests.csproj" />
+  <Project Path="StringifyDesktop/StringifyDesktop.csproj" />
+</Solution>

@@ -1,0 +1,113 @@
+using System.Net;
+using StringifyDesktop.Models;
+using StringifyDesktop.Services;
+using StringifyDesktop.ViewModels;
+
+namespace StringifyDesktop.Tests;
+
+public sealed class MainViewModelTests
+{
+    [Fact]
+    public async Task SyncDirectoryAsync_UploadsUntrackedFiles_AndSkipsUploadedOnes()
+    {
+        var tempRoot = CreateTempDirectory();
+        var replayDirectory = Path.Combine(tempRoot, "Replays");
+        Directory.CreateDirectory(replayDirectory);
+
+        var existingReplay = Path.Combine(replayDirectory, "existing.replay");
+        var newReplay = Path.Combine(replayDirectory, "new.replay");
+        await File.WriteAllBytesAsync(existingReplay, ReplayFileTestData.CreateReplayBytes(headerMagic: ReplayFileTestData.NetworkDemoMagic));
+        await File.WriteAllBytesAsync(newReplay, ReplayFileTestData.CreateReplayBytes(headerMagic: ReplayFileTestData.NetworkDemoMagic));
+
+        try
+        {
+            var paths = new AppPaths(tempRoot);
+            var configuration = new AppConfiguration(
+                "https://backend.example.invalid",
+                "https://issuer.example.invalid",
+                "client-id",
+                "profile email",
+                "stringify-gg://auth/callback",
+                replayDirectory);
+            var clock = new SystemClock();
+            var settingsStore = new SettingsStore(paths);
+            var uploadLogStore = new UploadLogStore(paths);
+            var protectedFileStore = new ProtectedFileStore(paths);
+
+            await settingsStore.InitializeAsync();
+            await uploadLogStore.InitializeAsync();
+            await uploadLogStore.SetAsync("existing.replay", new UploadLogEntry(UploadStatus.Uploaded, DateTimeOffset.UtcNow.AddMinutes(-5)));
+            await protectedFileStore.SaveSessionAsync(new OAuthSession(
+                "token",
+                null,
+                null,
+                "Bearer",
+                "profile email",
+                DateTimeOffset.UtcNow.AddHours(1),
+                new DesktopAuthUser("user-1", "user@example.com", true, "User", "user", null)));
+
+            var authService = new AuthService(configuration, protectedFileStore, clock);
+            await authService.InitializeAsync();
+
+            var requestedFiles = new List<string>();
+            var uploadService = new UploadService(
+                authService,
+                new FakeUploadRoutingClient(args =>
+                {
+                    requestedFiles.Add(args.FileName);
+                    return Task.FromResult<(string, string, IReadOnlyDictionary<string, string>)>(
+                        ("https://upload.example.invalid/replay", "PUT", new Dictionary<string, string>()));
+                }),
+                new HttpClient(new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK))));
+
+            var viewModel = new MainViewModel(
+                configuration,
+                new UiDispatcher(),
+                new ProtocolRegistrationService(configuration),
+                null!,
+                clock,
+                settingsStore,
+                uploadLogStore,
+                protectedFileStore,
+                authService,
+                null!,
+                uploadService,
+                new ReplayWatcherService(),
+                new FilePickerService());
+
+            await viewModel.SyncDirectoryAsync(replayDirectory);
+
+            Assert.Equal(["new.replay"], requestedFiles);
+
+            Assert.Equal(2, uploadLogStore.GetSnapshot().Count);
+            Assert.Equal(UploadStatus.Uploaded, uploadLogStore.GetStatus("existing.replay")?.Status);
+            Assert.Equal(UploadStatus.Uploaded, uploadLogStore.GetStatus("new.replay")?.Status);
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
+    private static string CreateTempDirectory()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"StringifyDesktop.Tests.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
+    private sealed class FakeUploadRoutingClient : IUploadRoutingClient
+    {
+        private readonly Func<(string FileName, long Size, string Token), Task<(string, string, IReadOnlyDictionary<string, string>)>> handler;
+
+        public FakeUploadRoutingClient(Func<(string FileName, long Size, string Token), Task<(string, string, IReadOnlyDictionary<string, string>)>> handler)
+        {
+            this.handler = handler;
+        }
+
+        public Task<(string UploadUrl, string Method, IReadOnlyDictionary<string, string> Headers)> RequestUploadUrlAsync(string fileName, long fileSize, string bearerToken, CancellationToken cancellationToken = default)
+        {
+            return handler((fileName, fileSize, bearerToken));
+        }
+    }
+}

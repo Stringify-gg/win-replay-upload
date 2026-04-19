@@ -1,8 +1,36 @@
+# Legacy frontend tooling
 node_modules/
 out/
 dist/
 build/
+
+# .NET build output
+bin/
+obj/
+/artifacts/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Local .NET SDK and package cache
+/.dotnet/
+
+# Local environment files
 .env
 .env.local
+
+# IDE and user-specific settings
+.vs/
+.idea/
+*.suo
+*.user
+*.userprefs
+*.rsuser
+*.DotSettings.user
+
+# Logs and OS files
 *.log
 .DS_Store
+Thumbs.db
+Desktop.ini
