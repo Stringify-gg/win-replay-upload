@@ -174,9 +174,9 @@ jobs:
       - name: Sign MSIX with Artifact Signing
         uses: azure/artifact-signing-action@v1
         with:
-          endpoint: ${{ vars.ARTIFACT_SIGNING_ENDPOINT }}
-          signing-account-name: ${{ vars.ARTIFACT_SIGNING_ACCOUNT_NAME }}
-          certificate-profile-name: ${{ vars.ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}
+          endpoint: ${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ secrets.ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}
           files: ${{ env.MSIX_PATH }}
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
