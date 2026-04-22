@@ -22,6 +22,7 @@ env:
   PACKAGE_MANIFEST: StringifyDesktop.Installer/Package.appxmanifest
   APP_PUBLISH_DIR: StringifyDesktop/bin/x64/Release/net10.0-windows/win-x64/msixpublish
   DESKTOP_STAGING_DIR: artifacts/desktop
+  INSTALLER_OUTPUT_DIR: StringifyDesktop.Installer/bin
   INSTALLER_APP_PACKAGES_DIR: StringifyDesktop.Installer/AppPackages
   PACKAGE_STAGING_DIR: artifacts/installer
   DOTNET_NOLOGO: true
@@ -143,17 +144,24 @@ jobs:
       - name: Stage MSIX artifact
         shell: pwsh
         run: |
+          $installerOutputDir = Join-Path $env:GITHUB_WORKSPACE $env:INSTALLER_OUTPUT_DIR
           $appPackagesDir = Join-Path $env:GITHUB_WORKSPACE $env:INSTALLER_APP_PACKAGES_DIR
           $stagingDir = Join-Path $env:GITHUB_WORKSPACE $env:PACKAGE_STAGING_DIR
 
           New-Item -ItemType Directory -Force -Path $stagingDir | Out-Null
 
-          $package = Get-ChildItem -Path $appPackagesDir -Recurse -Filter *.appx |
+          $package = Get-ChildItem -Path $installerOutputDir -Recurse -Filter *.msix -File -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTimeUtc -Descending |
             Select-Object -First 1
 
           if (-not $package) {
-            throw "No Appx package was produced by the packaging project."
+            $package = Get-ChildItem -Path $appPackagesDir -Recurse -Filter *.appx -File -ErrorAction SilentlyContinue |
+              Sort-Object LastWriteTimeUtc -Descending |
+              Select-Object -First 1
+          }
+
+          if (-not $package) {
+            throw "No MSIX or AppX package was produced by the packaging project."
           }
 
           $msixName = [System.IO.Path]::GetFileNameWithoutExtension($package.Name) + ".msix"
